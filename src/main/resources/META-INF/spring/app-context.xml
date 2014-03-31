@@ -14,7 +14,13 @@
         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
         http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
 
+  <!-- Enables auto scanning of annotations -->
   <context:component-scan base-package="ke.co.xhealth.social" />
+  
+  <!-- Import configuration files -->
+  <context:property-placeholder location="file:/etc/xhealth-social/twitter.properties" />
+  
+  
   
   <camelContext id="xHealthSocial" xmlns="http://camel.apache.org/schema/spring">
     <package>ke.co.xhealth.social.routes</package>
