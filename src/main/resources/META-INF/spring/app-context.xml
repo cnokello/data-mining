@@ -1,21 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context" 
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:broker="http://activemq.apache.org/schema/core"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.5.0.xsd">
 
-  <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-    <package>org.apache.camel.example.spring</package>
+  <context:component-scan base-package="ke.co.xhealth.social" />
+  
+  <camelContext id="xHealthSocial" xmlns="http://camel.apache.org/schema/spring">
+    <package>ke.co.xhealth.social.routes</package>
   </camelContext>
 
-  <!-- ActiveMQ Configuration -->
-  <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
-    <property name="connectionFactory">
-      <bean class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;broker.useJmx=true"/>
-      </bean>
-    </property>
-  </bean>
+    <!-- ActiveMQ Configuration -->
+    <bean id="connectionFactory" 
+       class="org.apache.activemq.ActiveMQConnectionFactory">
+       <property name="brokerURL" value="tcp://localhost:61616?wireFormat.maxInactivityDuration=30000000&amp;wireFormat.maxInactivityDurationInitalDelay=300000" />
+    </bean>
+    
+    <bean id="pooledConnectionFactory" 
+       class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop" depends-on="xHealthSocial">
+       <property name="maxConnections" value="1000" />
+       <property name="maximumActive" value="5000" />
+       <property name="connectionFactory" ref="connectionFactory" />
+       <property name="idleTimeout" value="0"/>
+    </bean>
+    
+    <bean id="jmsConfig" 
+       class="org.apache.camel.component.jms.JmsConfiguration">
+       <property name="connectionFactory" ref="pooledConnectionFactory"/>
+       <property name="concurrentConsumers" value="1"/>
+    </bean>
+    
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig" />
+        <property name="acceptMessagesWhileStopping" value="false"/>
+    </bean>
 
 </beans>
