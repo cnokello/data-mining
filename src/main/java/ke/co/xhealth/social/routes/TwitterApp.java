@@ -24,7 +24,15 @@ public class TwitterApp extends RouteBuilder {
   String ACCESS_TOKEN_SECRET;
 
   public void configure() {
-    from("timer://testTimer?period=5000").log("API KEY: " + API_KEY + "\n");
-  }
 
+    from("timer://twitterController?fixedRate=true&period=20000").routeId("twitterApp")
+
+    .setHeader("TWITTER_API_KEY", simple(API_KEY))
+        .setHeader("TWITTER_API_SECRET", simple(API_SECRET))
+        .setHeader("TWITTER_ACCESS_TOKE", simple(ACCESS_TOKEN))
+        .setHeader("TWITTER_ACCESS_SECRET", simple(ACCESS_TOKEN_SECRET))
+
+        .to("bean:twitterUpdateService");
+
+  }
 }
