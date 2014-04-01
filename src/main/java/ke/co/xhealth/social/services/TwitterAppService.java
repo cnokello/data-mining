@@ -1,14 +1,13 @@
 package ke.co.xhealth.social.services;
 
+import ke.co.xhealth.social.utils.TwitterAppUtils;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
-import twitter4j.auth.AccessToken;
 
 /**
  * This posts twitter updates.
@@ -19,10 +18,13 @@ import twitter4j.auth.AccessToken;
  * @author nelson.okello
  * 
  */
-@Service(value = "twitterUpdateService")
-public class TwitterUpdateService implements Processor {
+@Service(value = "twitterAppService")
+public class TwitterAppService implements Processor {
 
-  Logger logger = LoggerFactory.getLogger(TwitterUpdateService.class);
+  private Logger logger = LoggerFactory.getLogger(TwitterAppService.class);
+
+  private @Autowired
+  TwitterAppUtils twitterAppUtils;
 
   @Override
   public void process(Exchange exchange) throws Exception {
@@ -32,15 +34,11 @@ public class TwitterUpdateService implements Processor {
     final String accessTokenSecret = exchange.getIn().getHeader("TWITTER_ACCESS_SECRET",
         String.class);
 
+    twitterAppUtils.postUpdate(apiKey, apiSecret, accessToken, accessTokenSecret);
+
     logger.info(String.format("\nAPI KEY: %s\nAPI SECRET: %s\nACCESS TOKEN: %s\n\n", apiKey,
         apiSecret, accessToken));
 
-    Twitter twitter = TwitterFactory.getSingleton();
-    twitter.setOAuthConsumer(apiKey, apiSecret);
-
-    AccessToken apiAccessToken = new AccessToken(accessToken, accessTokenSecret);
-    twitter.setOAuthAccessToken(apiAccessToken);
-    twitter.updateStatus("I thought this would be funny:) And sure, it is!!");
   }
 
 }

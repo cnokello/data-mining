@@ -18,8 +18,11 @@
   <context:component-scan base-package="ke.co.xhealth.social" />
   
   <!-- Import configuration files -->
-  <context:property-placeholder location="file:/etc/xhealth-social/twitter.properties" />
-  
+  <context:property-placeholder location="file:/etc/xhealth-social/config.properties" />
+
+  <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+    <property name="location" value="file:/etc/xhealth-social/config.properties"/>
+  </bean>  
   
   
   <camelContext id="xHealthSocial" xmlns="http://camel.apache.org/schema/spring">
